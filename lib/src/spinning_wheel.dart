@@ -263,7 +263,7 @@ class _SpinningWheelState extends State<SpinningWheel>
     var modulo = _motion!.modulo(_currentDistance + _initialSpinAngle!);
     try {
       _currentDivider =
-          widget.dividers - (int.parse(modulo.toString()) ~/ _dividerAngle!);
+          widget.dividers - (double.parse(modulo.toString()) ~/ _dividerAngle!);
     } catch (e) {
       print('Error is $e');
     }
