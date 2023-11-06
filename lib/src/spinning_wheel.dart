@@ -112,7 +112,7 @@ class _SpinningWheelState extends State<SpinningWheel>
   double _initialCircularVelocity = 0;
 
   // angle for each divider: 2*pi / numberOfDividers
-  double? _dividerAngle;
+  double? _dividerAngle = 0.0;
 
   // current (circular) distance (angle) covered during the animation
   double _currentDistance = 0;
