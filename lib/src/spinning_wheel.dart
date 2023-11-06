@@ -83,7 +83,7 @@ class SpinningWheel extends StatefulWidget {
         assert(spinResistance > 0.0 && spinResistance <= 1.0),
         assert(initialSpinAngle >= 0.0 && initialSpinAngle <= (2 * pi)),
         assert(secondaryImage == null ||
-            (secondaryImageHeight <= height && secondaryImageWidth <= width));
+            (secondaryImageHeight! <= height && secondaryImageWidth! <= width));
 
   @override
   _SpinningWheelState createState() => _SpinningWheelState();
@@ -176,11 +176,11 @@ class _SpinningWheelState extends State<SpinningWheel>
 
   double get topSecondaryImage =>
       widget.secondaryImageTop ??
-      (widget.height / 2) - (widget.secondaryImageHeight / 2);
+      (widget.height / 2) - (widget.secondaryImageHeight! / 2);
 
   double get leftSecondaryImage =>
       widget.secondaryImageLeft ??
-      (widget.width / 2) - (widget.secondaryImageWidth / 2);
+      (widget.width / 2) - (widget.secondaryImageWidth! / 2);
 
   double get widthSecondaryImage => widget.secondaryImageWidth ?? widget.width;
 
@@ -205,7 +205,7 @@ class _SpinningWheelState extends State<SpinningWheel>
                   _updateAnimationValues();
                   widget.onUpdate!(_currentDivider);
                   return Transform.rotate(
-                    angle: _initialSpinAngle + _currentDistance,
+                    angle: _initialSpinAngle! + _currentDistance,
                     child: child,
                   );
                 }),
@@ -232,9 +232,17 @@ class _SpinningWheelState extends State<SpinningWheel>
   // transforms from global coordinates to local and store the value
   void _updateLocalPosition(Offset position) {
     if (_renderBox == null) {
-      _renderBox = context.findRenderObject();
+      final renderObject = context.findRenderObject();
+      if (renderObject is RenderBox) {
+        _renderBox = renderObject;
+      } else {
+        // Handle the case where the render object is not a RenderBox.
+        // You might want to throw an error or handle it according to your logic.
+      }
     }
-    _localPositionOnPanUpdate = _renderBox!.globalToLocal(position);
+    if (_renderBox != null) {
+      _localPositionOnPanUpdate = _renderBox!.globalToLocal(position);
+    }
   }
 
   /// returns true if (x,y) is outside the boundaries from size
@@ -253,8 +261,9 @@ class _SpinningWheelState extends State<SpinningWheel>
     }
     // calculate current divider selected
     var modulo = _motion!.modulo(_currentDistance + _initialSpinAngle!);
-    _currentDivider = (widget.dividers! - (modulo! ~/ _dividerAngle!));
-    if (_animationController.isCompleted) {
+    _currentDivider =
+        widget.dividers - (int.parse(modulo.toString()) ~/ _dividerAngle!);
+    if (_animationController!.isCompleted) {
       _initialSpinAngle = modulo;
       _currentDistance = 0;
     }
@@ -268,13 +277,13 @@ class _SpinningWheelState extends State<SpinningWheel>
 
     _updateLocalPosition(details.globalPosition);
 
-    if (_contains(_localPositionOnPanUpdate)) {
+    if (_contains(_localPositionOnPanUpdate!)) {
       // we need to update the rotation
       // so, calculate the new rotation angle and rebuild the widget
-      var angle = _spinVelocity.offsetToRadians(_localPositionOnPanUpdate);
+      var angle = _spinVelocity!.offsetToRadians(_localPositionOnPanUpdate!);
       setState(() {
         // initialSpinAngle will be added later on build
-        _currentDistance = angle - _initialSpinAngle;
+        _currentDistance = angle - _initialSpinAngle!;
       });
     } else {
       // if user dragged outside the boundaries we save the timestamp
@@ -287,17 +296,17 @@ class _SpinningWheelState extends State<SpinningWheel>
     if (!_userCanInteract) return;
 
     _offsetOutsideTimestamp = null;
-    _animationController.stop();
-    _animationController.reset();
+    _animationController!.stop();
+    _animationController!.reset();
 
-    widget.onEnd(_currentDivider);
+    widget.onEnd!(_currentDivider);
   }
 
   void _startAnimationOnPanEnd(DragEndDetails details) {
     if (!_userCanInteract) return;
 
     if (_offsetOutsideTimestamp != null) {
-      var difference = DateTime.now().difference(_offsetOutsideTimestamp);
+      var difference = DateTime.now().difference(_offsetOutsideTimestamp!);
       _offsetOutsideTimestamp = null;
       // if more than 50 seconds passed since user dragged outside the boundaries, dont start animation
       if (difference.inMilliseconds > 50) return;
@@ -311,24 +320,24 @@ class _SpinningWheelState extends State<SpinningWheel>
 
   void _startAnimation(Offset pixelsPerSecond) {
     var velocity =
-        _spinVelocity.getVelocity(_localPositionOnPanUpdate, pixelsPerSecond);
+        _spinVelocity!.getVelocity(_localPositionOnPanUpdate!, pixelsPerSecond);
 
     _localPositionOnPanUpdate = null;
     _isBackwards = velocity < 0;
     _initialCircularVelocity = pixelsPerSecondToRadians(velocity.abs());
-    _totalDuration = _motion.duration(_initialCircularVelocity);
+    _totalDuration = _motion!.duration(_initialCircularVelocity);
 
-    _animationController.duration =
+    _animationController!.duration =
         Duration(milliseconds: (_totalDuration * 1000).round());
 
-    _animationController.reset();
-    _animationController.forward();
+    _animationController!.reset();
+    _animationController!.forward();
   }
 
   dispose() {
-    _animationController.dispose();
+    _animationController!.dispose();
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
     }
     super.dispose();
   }
