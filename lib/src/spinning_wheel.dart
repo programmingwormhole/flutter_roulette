@@ -262,7 +262,7 @@ class _SpinningWheelState extends State<SpinningWheel>
     // calculate current divider selected
     var modulo = _motion!.modulo(_currentDistance + _initialSpinAngle!);
     _currentDivider =
-        widget.dividers - (double.parse(modulo) ~/ _dividerAngle!);
+        widget.dividers - (double.parse(modulo).toInt() ~/ _dividerAngle!);
     if (_animationController!.isCompleted) {
       _initialSpinAngle = modulo;
       _currentDistance = 0;
